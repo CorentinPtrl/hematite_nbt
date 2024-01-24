@@ -119,6 +119,21 @@ impl Blob {
         raw::close_nbt(&mut dst)
     }
 
+    /// Writes the binary representation of this `Blob` to an `io::Write`
+    /// destination.
+    pub fn to_writer_network<W>(&self, mut dst: &mut W) -> Result<()>
+        where
+            W: io::Write,
+    {
+        dst.write_u8(0x0a)?;
+        for (name, ref nbt) in self.content.iter() {
+            dst.write_u8(nbt.id())?;
+            raw::write_bare_string(&mut dst, name)?;
+            nbt.to_writer(&mut dst)?;
+        }
+        raw::close_nbt(&mut dst)
+    }
+
     /// Writes the binary representation of this `Blob`, compressed using
     /// the Gzip format, to an `io::Write` destination.
     pub fn to_gzip_writer<W>(&self, dst: &mut W) -> Result<()>
